@@ -2,7 +2,7 @@
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
-  name: high-priority
+  name: top-priority
 value: 2000000
 globalDefault: false
 description: "Critical infrastructure components: storage, controllers, registry, ingress"
