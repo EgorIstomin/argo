@@ -1,0 +1,26 @@
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority
+value: 2000000
+globalDefault: false
+description: "Critical infrastructure components: storage, controllers, registry, ingress"
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: medium-priority
+value: 1005000
+globalDefault: false
+description: "Production application workloads"
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: low-priority
+value: 1000000
+globalDefault: false
+description: "CI/CD, test and non-critical workloads"

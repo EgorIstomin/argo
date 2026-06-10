@@ -1,0 +1,74 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-forward-config
+  namespace: logs
+  labels:
+    app.kubernetes.io/name: fluentd-forward
+    app.kubernetes.io/component: logging
+data:
+  fluent.conf: |
+    <system>
+      log_level info
+    </system>
+
+    <source>
+      @type forward
+      port 24224
+      bind 0.0.0.0
+    </source>
+
+    <match sysapp.**>
+      @type copy
+
+      <store>
+        @type file
+        path /fluentd/log/logs/sysapp/${app}/%Y-%m-%d/${host}/${file}
+        append true
+        format json
+        compress gzip
+        add_path_suffix false
+
+        <buffer time,host,file,app>
+          @type file
+          path /fluentd/log/buffers/sysapp
+          chunk_limit_size 8M
+          flush_interval 5s
+          flush_mode interval
+          flush_thread_count 2
+          overflow_action block
+          queue_limit_length 8
+          retry_forever true
+          retry_max_interval 30
+          retry_type exponential_backoff
+        </buffer>
+      </store>
+    </match>
+
+    <match kube.{kube-system,nfs-client,monitoring,ingress-nginx,argocd}.**>
+      @type copy
+
+      <store>
+        @type file
+        path /fluentd/log/logs/kubernetes/${$.kubernetes.namespace_name}/%Y-%m-%d/${$.kubernetes.container_name}
+        append true
+        format json
+        compress gzip
+        add_path_suffix false
+
+        <buffer time,$.kubernetes.namespace_name,$.kubernetes.container_name>
+          @type file
+          path /fluentd/log/buffers/kubernetes
+          chunk_limit_size 8M
+          flush_interval 5s
+          flush_mode interval
+          flush_thread_count 2
+          overflow_action block
+          queue_limit_length 8
+          retry_forever true
+          retry_max_interval 30
+          retry_type exponential_backoff
+        </buffer>
+      </store>
+    </match>
